@@ -7,16 +7,14 @@ exports.login = function(req, res) {
 
     var email = req.body.email;
     var password = req.body.password;
-
     var sql = "SELECT * FROM `mt_user` WHERE `email`=? AND `password`=?";
     var password = md5(password);
-
     var values = [email, password];
 
     connection.query(sql, values, function(err, result) {
-        //console.log(result);
         if (err) {
-            responses.sendError(res);
+            var msg="Error in execution in login";
+            responses.sendError(res,msg);
             return;
         } else {
 
@@ -25,66 +23,60 @@ exports.login = function(req, res) {
                 responses.success(result, res);
                 return;
             } else {
-                responses.invalidCredential(res);
+                var msg="invalid Creditimenntal";
+                responses.sendError(res,msg);
 
             }
         }
     });
 }
 exports.signup = function(req, res) {
-    // console.log('11111111')
-
     var name = req.body.name;
     var email = req.body.email;
     var password = req.body.password;
-
     password = password ? md5(password) : res.json({
-        message: 'you have invalid password'
+     message: 'you have invalid password'
     });
+
     var sql = "SELECT * FROM `mt_user` WHERE `email`=?";
     var values = [email, password];
-
     connection.query(sql, values, function(err, result) {
         console.log({
             err,
             result
         })
         if (err) {
-            responses.sendError(res);
+            var msg="Error in execution";
+            responses.sendError(res,msg);
             return;
         } else if (result.length > 0) {
-
-
-
-            var msg = "Email is Already exist";
-            responses.Alreadyexist(msg, res);
+            var msg="email is already exist";
+            responses.sendError(res,msg);
             return;
-
         } else {
-
             var user_id = md5(comFunc.generateRandomString());
 
             var sql = "INSERT INTO `mt_user` (`user_id`, `name`, `email`, `password`) VALUES (?,?,?,?)";
             var values = [user_id, name, email, password];
-
             connection.query(sql, values, function(err, result) {
                 console.log({
                     err,
                     result
                 })
                 if (err) {
-                    responses.sendError(res);
-                    console.log(err);
+                    var msg="Error in execution imn signup";
+                    responses.sendError(res,msg);
                     return;
                 } else {
-                    var sql = "SELECT * from `mt_user` WHERE `user_id`=?";
+                    var sql = "SELECT * from `mt_user` WHERE `user_id`=?";                    
                     var value = [user_id];
                     connection.query(sql, value, function(err, result) {
                         if (err) {
-                            responses.sendError(res);
+                            var msg="Error in execution";
+                            responses.sendError(res,msg)
                             return;
                         } else {
-                            responses.resultview(result, res);
+                            responses.success(result, res);
                             console.log(result[0]);
                         }
                     });
@@ -107,7 +99,8 @@ exports.createprofile = function(req, res) {
     var sql = "SELECT * FROM `mt_user` WHERE `user_id`=?";
     connection.query(sql, [user_id], function(err, result) {
         if (err) {
-            responses.sendError(res);
+            var msg="Error in execution";
+            responses.sendError(res,msg)
             return;
         } else {
             if (result.length > 0) {
@@ -123,15 +116,16 @@ exports.createprofile = function(req, res) {
                         connection.query(update_sql, values, function(err, userDetails) {
                             if (err) {
                                 console.log(err);
-
-                                responses.sendError(res);
+                                var msg="Error in execution";
+                                responses.sendError(res,msg)
                                 return;
                             } else {
                                 var sql = "SELECT * FROM `mt_user` WHERE `user_id`=?";
                                 var value = [user_id];
                                 connection.query(sql, value, function(err, result) {
                                     if (err) {
-                                        responses.sendError(res);
+                                        var msg="Error in execution";
+                                        responses.sendError(res,msg)
                                         return;
                                     } else {
                                         responses.success(result, res);
@@ -141,7 +135,7 @@ exports.createprofile = function(req, res) {
                             }
                         });
 
-                        console.log(123456);
+                        
                     } else {
                         for (var i = 0; i < req.files.length; i++) {
                             if (req.files[i].fieldname == "profile_image") {
@@ -152,14 +146,18 @@ exports.createprofile = function(req, res) {
                                     if (err) {
                                         console.log(err);
 
-                                        responses.sendError(res);
+                                        var msg="Error in execution";
+                                        responses.sendError(res,msg)
+            
                                         return;
                                     } else {
                                         var sql = "SELECT * FROM `mt_user` WHERE `user_id`=?";
                                         var value = [user_id];
                                         connection.query(sql, value, function(err, result) {
                                             if (err) {
-                                                responses.sendError(res);
+                                                 var msg="Error in execution";
+                                                responses.sendError(res,msg)
+            
                                                 return;
                                             } else {
                                                 responses.success(result, res);
@@ -175,16 +173,19 @@ exports.createprofile = function(req, res) {
                                 connection.query(update_sql, values, function(err, userDetails) {
                                     if (err) {
                                         console.log(err);
-
-                                        responses.sendError(res);
+                                         var msg="Error in execution";
+                                        responses.sendError(res,msg)
+            
                                         return;
                                     } else {
                                         var sql = "SELECT * FROM `mt_user` WHERE `user_id`=?";
                                         var value = [user_id];
                                         connection.query(sql, value, function(err, result) {
                                             if (err) {
-                                                responses.sendError(res);
-                                                return;
+                                                 var msg="Error in execution";
+                                                 responses.sendError(res,msg)
+            
+                                                return;;
                                             } else {
                                                 responses.success(result, res);
                                                 return;
@@ -199,13 +200,15 @@ exports.createprofile = function(req, res) {
                     }
 
                 } else {
-                    responses.agelimit(res);
-                    return;
+                     var msg="Only 18+";
+                     responses.sendError(res,msg)
+            
+                     return;
                 }
             } else {
-                var msg = "No Data Found";
-                responses.NoDataFound(msg, res);
-                return;
+                 var msg="No data found";
+                 responses.sendError(res,msg)
+                 return;
             }
         }
     });
